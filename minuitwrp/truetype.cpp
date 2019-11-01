@@ -7,15 +7,15 @@
 
 #include "minui.h"
 
-#include <cutils/hashmap.h>
+// #include <cutils/hashmap.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 
 #include <pixelflinger/pixelflinger.h>
 #include <pthread.h>
-// For std::min and std::max
 #include <algorithm>
+#include <map>
 
 #define STRING_CACHE_MAX_ENTRIES 400
 #define STRING_CACHE_TRUNCATE_ENTRIES 150
@@ -36,8 +36,8 @@ typedef struct
     int max_height;
     int base;
     FT_Face face;
-    Hashmap *glyph_cache;
-    Hashmap *string_cache;
+    std::map<int, glyph_cache;
+    std::map *string_cache;
     struct StringCacheEntry *string_cache_head;
     struct StringCacheEntry *string_cache_tail;
     pthread_mutex_t mutex;
@@ -70,7 +70,7 @@ typedef struct StringCacheEntry StringCacheEntry;
 typedef struct
 {
     FT_Library ft_library;
-    Hashmap *fonts;
+    std::map *fonts;
     pthread_mutex_t mutex;
 } FontData;
 
@@ -203,7 +203,8 @@ void *gr_ttf_loadFont(const char *filename, int size, int dpi)
             .path = (char*)filename
         };
 
-        res = (TrueTypeFont *)hashmapGet(font_data.fonts, &k);
+        // matt
+        // res = (TrueTypeFont *)hashmapGet(font_data.fonts, &k);
         if(res)
         {
             ++res->refcount;
@@ -246,12 +247,14 @@ void *gr_ttf_loadFont(const char *filename, int size, int dpi)
     res->max_height = -1;
     res->base = -1;
     res->refcount = 1;
-    res->glyph_cache = hashmapCreate(32, hashmapIntHash, hashmapIntEquals);
-    res->string_cache = hashmapCreate(128, gr_ttf_string_cache_hash, gr_ttf_string_cache_equals);
+    // matt
+    // res->glyph_cache = hashmapCreate(32, hashmapIntHash, hashmapIntEquals);
+    // res->string_cache = hashmapCreate(128, gr_ttf_string_cache_hash, gr_ttf_string_cache_equals);
     pthread_mutex_init(&res->mutex, 0);
 
-    if(!font_data.fonts)
-        font_data.fonts = hashmapCreate(4, gr_ttf_font_cache_hash, gr_ttf_font_cache_equals);
+    // matt
+    // if(!font_data.fonts)
+        // font_data.fonts = hashmapCreate(4, gr_ttf_font_cache_hash, gr_ttf_font_cache_equals);
 
     key = (TrueTypeFontKey *)malloc(sizeof(TrueTypeFontKey));
     memset(key, 0, sizeof(TrueTypeFontKey));
@@ -260,8 +263,8 @@ void *gr_ttf_loadFont(const char *filename, int size, int dpi)
     key->dpi = dpi;
 
     res->key = key;
-
-    hashmapPut(font_data.fonts, key, res);
+    // matt
+    // hashmapPut(font_data.fonts, key, res);
 
 exit:
     pthread_mutex_unlock(&font_data.mutex);
@@ -312,22 +315,24 @@ void gr_ttf_freeFont(void *font)
 
     if(--d->refcount == 0)
     {
-        hashmapRemove(font_data.fonts, d->key);
+        // matt
+        // hashmapRemove(font_data.fonts, d->key);
 
-        if(hashmapSize(font_data.fonts) == 0)
-        {
-            hashmapFree(font_data.fonts);
-            font_data.fonts = NULL;
-        }
+        // if(hashmapSize(font_data.fonts) == 0)
+        // {
+            // hashmapFree(font_data.fonts);
+            // font_data.fonts = NULL;
+        // }
 
         free(d->key->path);
         free(d->key);
 
         FT_Done_Face(d->face);
-        hashmapForEach(d->string_cache, gr_ttf_freeStringCache, NULL);
-        hashmapFree(d->string_cache);
-        hashmapForEach(d->glyph_cache, gr_ttf_freeFontCache, NULL);
-        hashmapFree(d->glyph_cache);
+        // matt
+        // hashmapForEach(d->string_cache, gr_ttf_freeStringCache, NULL);
+        // hashmapFree(d->string_cache);
+        // hashmapForEach(d->glyph_cache, gr_ttf_freeFontCache, NULL);
+        // hashmapFree(d->glyph_cache);
         pthread_mutex_destroy(&d->mutex);
         free(d);
     }
@@ -337,12 +342,12 @@ void gr_ttf_freeFont(void *font)
 
 static TrueTypeCacheEntry *gr_ttf_glyph_cache_peek(TrueTypeFont *font, int char_index)
 {
-    return (TrueTypeCacheEntry *)hashmapGet(font->glyph_cache, &char_index);
+    // return (TrueTypeCacheEntry *)hashmapGet(font->glyph_cache, &char_index);
 }
 
 static TrueTypeCacheEntry *gr_ttf_glyph_cache_get(TrueTypeFont *font, int char_index)
 {
-    TrueTypeCacheEntry *res = (TrueTypeCacheEntry *)hashmapGet(font->glyph_cache, &char_index);
+    // TrueTypeCacheEntry *res = (TrueTypeCacheEntry *)hashmapGet(font->glyph_cache, &char_index);
     if(!res)
     {
         int error = FT_Load_Glyph(font->face, char_index, FT_LOAD_RENDER);
@@ -368,7 +373,7 @@ static TrueTypeCacheEntry *gr_ttf_glyph_cache_get(TrueTypeFont *font, int char_i
         int *key = (int *)malloc(sizeof(int));
         *key = char_index;
 
-        hashmapPut(font->glyph_cache, key, res);
+        // hashmapPut(font->glyph_cache, key, res);
     }
 
     return res;
@@ -554,7 +559,7 @@ static StringCacheEntry *gr_ttf_string_cache_peek(TrueTypeFont *font, const char
         .max_width = max_width
     };
 
-    return (StringCacheEntry *)hashmapGet(font->string_cache, &k);
+    // return (StringCacheEntry *)hashmapGet(font->string_cache, &k);
 }
 
 static StringCacheEntry *gr_ttf_string_cache_get(TrueTypeFont *font, const char *text, int max_width)
@@ -565,7 +570,7 @@ static StringCacheEntry *gr_ttf_string_cache_get(TrueTypeFont *font, const char 
         .max_width = max_width
     };
 
-    res = (StringCacheEntry *)hashmapGet(font->string_cache, &k);
+    // res = (StringCacheEntry *)hashmapGet(font->string_cache, &k);
     if(!res)
     {
         res = (StringCacheEntry *)malloc(sizeof(StringCacheEntry));
@@ -593,7 +598,7 @@ static StringCacheEntry *gr_ttf_string_cache_get(TrueTypeFont *font, const char 
             font->string_cache_head = res;
         font->string_cache_tail = res;
 
-        hashmapPut(font->string_cache, new_key, res);
+        // hashmapPut(font->string_cache, new_key, res);
     }
     else if(res->next)
     {
@@ -613,22 +618,22 @@ static StringCacheEntry *gr_ttf_string_cache_get(TrueTypeFont *font, const char 
         font->string_cache_tail = res;
 
         // truncate old entries
-        if(hashmapSize(font->string_cache) >= STRING_CACHE_MAX_ENTRIES)
-        {
-            printf("Truncating string cache entries.\n");
-            int i;
-            StringCacheEntry *ent;
-            for(i = 0; i < STRING_CACHE_TRUNCATE_ENTRIES; ++i)
-            {
-                ent = font->string_cache_head;
-                font->string_cache_head = ent->next;
-                font->string_cache_head->prev = NULL;
+        // if(hashmapSize(font->string_cache) >= STRING_CACHE_MAX_ENTRIES)
+        // {
+            // printf("Truncating string cache entries.\n");
+            // int i;
+            // StringCacheEntry *ent;
+            // for(i = 0; i < STRING_CACHE_TRUNCATE_ENTRIES; ++i)
+            // {
+                // ent = font->string_cache_head;
+                // font->string_cache_head = ent->next;
+                // font->string_cache_head->prev = NULL;
 
-                hashmapRemove(font->string_cache, ent->key);
+                // hashmapRemove(font->string_cache, ent->key);
 
-                gr_ttf_freeStringCache(ent->key, ent, NULL);
-            }
-        }
+                // gr_ttf_freeStringCache(ent->key, ent, NULL);
+            // }
+        // }
     }
     return res;
 }
@@ -822,7 +827,7 @@ static bool gr_ttf_dump_stats_font(void *key, void *value, void *context)
 
     pthread_mutex_lock(&f->mutex);
 
-    hashmapForEach(f->string_cache, gr_ttf_dump_stats_count_string_cache, &string_cache_size);
+    // hashmapForEach(f->string_cache, gr_ttf_dump_stats_count_string_cache, &string_cache_size);
 
     printf("  Font %s (size %d, dpi %d):\n"
             "    refcount: %d\n"
@@ -832,8 +837,8 @@ static bool gr_ttf_dump_stats_font(void *key, void *value, void *context)
             "    string_cache: %zu entries (%.2f kB)\n",
             k->path, k->size, k->dpi,
             f->refcount, f->max_height, f->base,
-            hashmapSize(f->glyph_cache),
-            hashmapSize(f->string_cache), ((double)string_cache_size)/1024);
+            // hashmapSize(f->glyph_cache),
+            // hashmapSize(f->string_cache), ((double)string_cache_size)/1024);
 
     pthread_mutex_unlock(&f->mutex);
 
@@ -851,8 +856,8 @@ void gr_ttf_dump_stats(void)
     else
     {
         int total_string_cache_size = 0;
-        printf("%zu fonts loaded.\n", hashmapSize(font_data.fonts));
-        hashmapForEach(font_data.fonts, gr_ttf_dump_stats_font, &total_string_cache_size);
+        // printf("%zu fonts loaded.\n", hashmapSize(font_data.fonts));
+        // hashmapForEach(font_data.fonts, gr_ttf_dump_stats_font, &total_string_cache_size);
         printf("  Total string cache size: %.2f kB\n", ((double)total_string_cache_size)/1024);
     }
 
