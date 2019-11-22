@@ -167,6 +167,7 @@ void FontResource::LoadFont(xml_node<>* node, ZipWrap* pZip)
 	{
 		LOGERR("Non-TTF fonts are no longer supported.\n");
 	}
+	printf("resources\n");
 }
 
 void FontResource::DeleteFont() {

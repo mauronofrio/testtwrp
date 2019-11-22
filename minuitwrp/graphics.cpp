@@ -70,6 +70,7 @@ int gr_textEx_scaleW(int x, int y, const char *s, void* pFont, int max_width, in
     if (!s || strlen(s) == 0 || !font)
         return 0;
 
+    printf("gr_textEx_scaleW\n");
     measured_height = gr_ttf_getMaxFontHeight(font);
 
     if (scale) {
