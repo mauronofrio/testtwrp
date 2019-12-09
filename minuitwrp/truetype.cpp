@@ -134,7 +134,7 @@ void *gr_ttf_loadFont(const char *filename, int size, int dpi)
 
     res->key = key;
     font_data.fonts[key->path] = res;
-    printf("gr_ttf_loadFont::font_data::size::%lu\n", font_data.fonts.size());
+//    printf("gr_ttf_loadFont::font_data::size::%u\n", font_data.fonts.size());
     
 exit:
     pthread_mutex_unlock(&font_data.mutex);
@@ -205,7 +205,7 @@ void gr_ttf_freeFont(void *font)
 static TrueTypeCacheEntry *gr_ttf_glyph_cache_peek(TrueTypeFont *font, int char_index)
 {
     printf("gr_ttf_glyph_cache_peek::char_index::%d\n", char_index);
-    printf("gr_ttf_glyph_cache_peek::font->glyph_cache::size: %lu\n", font->glyph_cache.size());
+//    printf("gr_ttf_glyph_cache_peek::font->glyph_cache::size: %lu\n", font->glyph_cache.size());
     if (font->glyph_cache.size() > 0) {
         printf("gr_ttf_glyph_cache_peek::font::%p\n", (void*) font->glyph_cache[char_index]);
         return font->glyph_cache[char_index];

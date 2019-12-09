@@ -761,9 +761,11 @@ MtpProperty* IMtpDatabase::getDevicePropertyDesc(MtpDeviceProperty property) {
   bool writable = false;
   switch (property) {
 	case MTP_DEVICE_PROPERTY_SYNCHRONIZATION_PARTNER:
+	  break;
 	case MTP_DEVICE_PROPERTY_DEVICE_FRIENDLY_NAME:
 	  writable = true;
 	  // fall through
+	  break;
 	case MTP_DEVICE_PROPERTY_IMAGE_SIZE:
 	  result = new MtpProperty(property, MTP_TYPE_STR, writable);
 

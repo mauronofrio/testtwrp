@@ -55,7 +55,7 @@
 #include <ext4_utils/ext4_crypt.h>
 
 #ifdef USE_KEYSTORAGE_4
-#include <android/security/IKeystoreService.h>
+#include <android/security/keystore/IKeystoreService.h>
 #else
 #include <keystore/IKeystoreService.h>
 #include <keystore/authorization_set.h>
@@ -64,6 +64,7 @@
 #include <binder/IServiceManager.h>
 
 #include <keystore/keystore.h>
+#include <keystore/keystore_promises.h>
 
 #include <algorithm>
 extern "C" {
@@ -551,7 +552,7 @@ std::string unwrapSyntheticPasswordBlob(const std::string& spblob_path, const st
 	// First get the keystore service
     sp<IBinder> binder = getKeystoreBinderRetry();
 #ifdef USE_KEYSTORAGE_4
-	sp<security::IKeystoreService> service = interface_cast<security::IKeystoreService>(binder);
+	sp<security::keystore::IKeystoreService> service = interface_cast<security::keystore::IKeystoreService>(binder);
 #else
 	sp<IKeystoreService> service = interface_cast<IKeystoreService>(binder);
 #endif
@@ -721,8 +722,10 @@ std::string unwrapSyntheticPasswordBlob(const std::string& spblob_path, const st
 		security::keymaster::OperationResult update_result;
 		security::keymaster::OperationResult finish_result;
 		::android::security::keymaster::KeymasterArguments empty_params;
+		sp<::keystore::OperationResultPromise> promise(new ::keystore::OperationResultPromise());
+                auto future = promise->get_future();
 		// These parameters are mostly driven by the cipher.init call https://android.googlesource.com/platform/frameworks/base/+/android-8.0.0_r23/services/core/java/com/android/server/locksettings/SyntheticPasswordCrypto.java#63
-		service->begin(binder, keystore_alias16, (int32_t)purpose, true, android::security::keymaster::KeymasterArguments(begin_params.hidl_data()), entropy, -1, &begin_result);
+		service->begin(promise, binder, keystore_alias16, (int32_t)purpose, true, android::security::keymaster::KeymasterArguments(begin_params.hidl_data()), entropy, -1, &begin_result);
 #else
 		::keystore::KeyPurpose purpose = ::keystore::KeyPurpose::DECRYPT;
 		OperationResult begin_result;
